@@ -130,8 +130,7 @@ class ExactInference(InferenceModule):
     print "emissionModel:", emissionModel
 
     allPossible = util.Counter()
-    print self.beliefs
-    print "-----------------------------------------------------------------"
+    
     #it's in jail
     if noisyDistance == None:
       allPossible[self.getJailPosition()] = 1.0
@@ -144,7 +143,10 @@ class ExactInference(InferenceModule):
           #this doesn't take into account the probability at all
           #use the prob to figure out the most likely positions
           #multiply by the previous beliefs to update knowledge
-          allPossible[pos] = prob * self.beliefs[pos]
+          if self.beliefs != 0:
+            allPossible[pos] = prob * self.beliefs[pos]
+          else:
+            allPossible[pos] = prob * 0.001
       allPossible.normalize()
     self.beliefs = allPossible
     
