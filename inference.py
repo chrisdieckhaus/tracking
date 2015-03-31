@@ -10,6 +10,7 @@ import util
 import random
 import busters
 import game
+import time
 
 class InferenceModule:
   """
@@ -125,17 +126,26 @@ class ExactInference(InferenceModule):
     noisyDistance = observation
     emissionModel = busters.getObservationDistribution(noisyDistance)
     pacmanPosition = gameState.getPacmanPosition()
-    
-    "*** YOUR CODE HERE ***"
-    # Replace this code with a correct observation update
-    # Be sure to handle the jail.
+    print "noisyDistance:", noisyDistance
+    print "emissionModel:", emissionModel
+
     allPossible = util.Counter()
-    for p in self.legalPositions:
-      trueDistance = util.manhattanDistance(p, pacmanPosition)
-      if emissionModel[trueDistance] > 0: allPossible[p] = 1.0
-    allPossible.normalize()
-        
-    "*** YOUR CODE HERE ***"
+    print self.beliefs
+    print "-----------------------------------------------------------------"
+    #it's in jail
+    if noisyDistance == None:
+      allPossible[self.getJailPosition()] = 1.0
+    else:
+      for pos in self.legalPositions:
+        trueDistance = util.manhattanDistance(pos, pacmanPosition)
+        prob = emissionModel[trueDistance]
+        if prob > 0: 
+          #allPossible[p] = 1.0
+          #this doesn't take into account the probability at all
+          #use the prob to figure out the most likely positions
+          #multiply by the previous beliefs to update knowledge
+          allPossible[pos] = prob * self.beliefs[pos]
+      allPossible.normalize()
     self.beliefs = allPossible
     
   def elapseTime(self, gameState):
