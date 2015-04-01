@@ -11,6 +11,7 @@ from game import Agent
 from game import Directions
 from keyboardAgents import KeyboardAgent
 import inference
+import time
 
 class BustersAgent:
   "An agent that tracks and displays its beliefs about ghost positions."
@@ -103,9 +104,25 @@ class GreedyBustersAgent(BustersAgent):
     """
     pacmanPosition = gameState.getPacmanPosition()
     legal = [a for a in gameState.getLegalPacmanActions()]
+    print legal
     livingGhosts = gameState.getLivingGhosts()
+    print "living ghosts:", livingGhosts
     livingGhostPositionDistributions = [beliefs for i,beliefs
                                         in enumerate(self.ghostBeliefs)
                                         if livingGhosts[i+1]]
+    for ghostDist in livingGhostPositionDistributions:
+      for dist in ghostDist.items():
+        print dist
+    time.sleep(10)
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    #need to find most likely location of each living ghost
+    #pick the closest out of these likely locations
+    #pick direction that goes towards that.
+
+
+
+
+
+
+    return "South"

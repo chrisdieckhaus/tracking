@@ -126,8 +126,6 @@ class ExactInference(InferenceModule):
     noisyDistance = observation
     emissionModel = busters.getObservationDistribution(noisyDistance)
     pacmanPosition = gameState.getPacmanPosition()
-    print "noisyDistance:", noisyDistance
-    print "emissionModel:", emissionModel
     allPossible = util.Counter()
     
     #it's in jail
@@ -140,7 +138,6 @@ class ExactInference(InferenceModule):
         if prob > 0: 
           allPossible[pos] = prob * self.beliefs[pos]
     allPossible.normalize()
-
     self.beliefs = allPossible
     
   def elapseTime(self, gameState):
@@ -187,7 +184,26 @@ class ExactInference(InferenceModule):
     """
     
     "*** YOUR CODE HERE ***"
-
+    #print "In the elapsed Time method"
+    pacmanPosition = gameState.getPacmanPosition()
+    allPossible = util.Counter()
+    oldPositions = self.legalPositions
+    for oldPos in oldPositions:
+      #get new position distribution via provided method
+      newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+      #print newPosDist
+      for i in newPosDist.items():
+        pos = i[0]
+        prob = i[1]
+        #this is the summation I was trying to implement in Question 4. It was just in the wrong spot.
+        #Summation{sj} P(sj)*P(sj->sk)
+        #newProb is basically the stuff we computed in Question 4.
+        newProb = prob * self.beliefs[oldPos]
+        #Sum this into all the other probs for that position
+        allPossible[pos] = allPossible[pos] + newProb
+    allPossible.normalize()
+    self.beliefs = allPossible
+  
   def getBeliefDistribution(self):
     return self.beliefs
 
