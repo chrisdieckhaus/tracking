@@ -128,7 +128,6 @@ class ExactInference(InferenceModule):
     pacmanPosition = gameState.getPacmanPosition()
     print "noisyDistance:", noisyDistance
     print "emissionModel:", emissionModel
-
     allPossible = util.Counter()
     
     #it's in jail
@@ -139,15 +138,9 @@ class ExactInference(InferenceModule):
         trueDistance = util.manhattanDistance(pos, pacmanPosition)
         prob = emissionModel[trueDistance]
         if prob > 0: 
-          #allPossible[p] = 1.0
-          #this doesn't take into account the probability at all
-          #use the prob to figure out the most likely positions
-          #multiply by the previous beliefs to update knowledge
-          if self.beliefs != 0:
-            allPossible[pos] = prob * self.beliefs[pos]
-          else:
-            allPossible[pos] = prob * 0.001
-      allPossible.normalize()
+          allPossible[pos] = prob * self.beliefs[pos]
+    allPossible.normalize()
+
     self.beliefs = allPossible
     
   def elapseTime(self, gameState):
