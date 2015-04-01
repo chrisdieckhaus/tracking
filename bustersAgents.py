@@ -12,6 +12,7 @@ from game import Directions
 from keyboardAgents import KeyboardAgent
 import inference
 import time
+import random
 
 class BustersAgent:
   "An agent that tracks and displays its beliefs about ghost positions."
@@ -104,25 +105,83 @@ class GreedyBustersAgent(BustersAgent):
     """
     pacmanPosition = gameState.getPacmanPosition()
     legal = [a for a in gameState.getLegalPacmanActions()]
-    print legal
     livingGhosts = gameState.getLivingGhosts()
     print "living ghosts:", livingGhosts
     livingGhostPositionDistributions = [beliefs for i,beliefs
                                         in enumerate(self.ghostBeliefs)
                                         if livingGhosts[i+1]]
-    for ghostDist in livingGhostPositionDistributions:
-      for dist in ghostDist.items():
-        print dist
-    time.sleep(10)
     "*** YOUR CODE HERE ***"
 
     #need to find most likely location of each living ghost
     #pick the closest out of these likely locations
     #pick direction that goes towards that.
+    totalClosestDist = 10000
+    totalClosestPos = []
+    for i,belief in enumerate(self.ghostBeliefs):
+      ghostIndex = i+1
+      if livingGhosts[ghostIndex]:
+        print "Ghost " + str(ghostIndex) + " is alive."
+        maxProb = 0
+        maxPositions = []
+        for b in belief.items():
+          pos = b[0]
+          prob = b[1]
+          if prob >= maxProb:
+            maxProb = prob
+            maxPositions.append(pos)
+        print maxProb
+        print maxPositions
+        print "Pacman is at location ", pacmanPosition
+        closestDist = 10000
+        closestPos = []
+        for ghostPos in maxPositions:
+          d = self.distancer.getDistance(pacmanPosition, ghostPos)
+          if d < closestDist:
+            closestDist = d
+            closestPos = [ghostPos]
+          elif d == closestDist:
+            print ghostPos
+            print closestPos
+            closestPos.append(ghostPos)
+        print "closestDist:", closestDist
+        print "closestPos:", closestPos
+        print "total", totalClosestDist, totalClosestPos
+        if closestDist < totalClosestDist:
+          print str(closestDist)+" is closer than "+str(totalClosestDist)
+          totalClosestDist = closestDist
+          totalClosestPos = []
+          totalClosestPos.append(closestPos)
+        #time.sleep(5)
+      else:
+        print "Ghost " + str(ghostIndex) + " is dead."
 
+    #We've now found the closest most likely position of a ghost.
+    print "Total closest dist:", totalClosestDist
+    print "Total closest pos:", totalClosestPos
 
+    if len(totalClosestPos) == 1:
+      print "Only one closestPos"
+      totalClosestPos = totalClosestPos[0]
+    print totalClosestPos
+    #Now need to figure out which direction to move there.
+    minD = 100000
+    minDirection = []
+    for action in legal:
+      print "Location before move is", pacmanPosition
+      print "Moving ", action
+      successorPosition = Actions.getSuccessor(pacmanPosition, action)
+      print "Now at location", successorPosition
+      print totalClosestPos
+      d = self.distancer.getDistance(successorPosition, totalClosestPos)
+      print "d", d
+      if d < minD:
+        minD = d
+        minDirection = []
+        minDirection.append(action)
+      elif d == minD:
+        minDirection.append(action)
+    numDirections = len(minDirection)
+    bestDir = minDirection[random.randint(0, numDirections-1)]
+    print bestDir
 
-
-
-
-    return "South"
+    return bestDir
