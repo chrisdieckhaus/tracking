@@ -106,7 +106,7 @@ class GreedyBustersAgent(BustersAgent):
     pacmanPosition = gameState.getPacmanPosition()
     legal = [a for a in gameState.getLegalPacmanActions()]
     livingGhosts = gameState.getLivingGhosts()
-    print "living ghosts:", livingGhosts
+    #print "living ghosts:", livingGhosts
     livingGhostPositionDistributions = [beliefs for i,beliefs
                                         in enumerate(self.ghostBeliefs)
                                         if livingGhosts[i+1]]
@@ -126,62 +126,86 @@ class GreedyBustersAgent(BustersAgent):
         for b in belief.items():
           pos = b[0]
           prob = b[1]
-          if prob >= maxProb:
+          if prob > maxProb:
+            #print prob, pos
             maxProb = prob
+            maxPositions = []
             maxPositions.append(pos)
-        print maxProb
-        print maxPositions
-        print "Pacman is at location ", pacmanPosition
+          elif prob == maxProb:
+            #print prob, pos
+            maxPositions.append(pos)
+        #print "The greatest probability of ghost location is", maxProb
+        #maxPositions is a list of tuples
+        #print "At locations", maxPositions
+
+        #Now that we've found the greatest prob and the location w/greatest prob, 
+        #need to find closest one to pacman
         closestDist = 10000
         closestPos = []
         for ghostPos in maxPositions:
           d = self.distancer.getDistance(pacmanPosition, ghostPos)
           if d < closestDist:
+            #print d, ghostPos
             closestDist = d
-            closestPos = [ghostPos]
-          elif d == closestDist:
-            print ghostPos
-            print closestPos
+            closestPos = []
             closestPos.append(ghostPos)
-        print "closestDist:", closestDist
-        print "closestPos:", closestPos
-        print "total", totalClosestDist, totalClosestPos
+          elif d == closestDist:
+            closestPos.append(ghostPos)
+        #print "closestDist:", closestDist
+        #closestPos is a list of tuples
+        #print "closestPos:", closestPos
+
+        #need to return random one
+        n = len(closestPos)
+        #print n
+        singleClosestPos = closestPos[random.randint(0, n-1)]
+        #print "singleClosestPos", singleClosestPos
+
+        #We've found the closest high likelihood position of a ghost (singleClosestDist).
+        #Now need to see if it is closer than any other ghost.
+        #print "totalClosestDist", totalClosestDist
+        #print "totalClosestPos", totalClosestPos
         if closestDist < totalClosestDist:
-          print str(closestDist)+" is closer than "+str(totalClosestDist)
+          #print str(closestDist)+" is closer than "+str(totalClosestDist)
           totalClosestDist = closestDist
           totalClosestPos = []
-          totalClosestPos.append(closestPos)
-        #time.sleep(5)
+          totalClosestPos.append(singleClosestPos)
+        #print "totalClosestDist", totalClosestDist
+        #print "totalClosestPos", totalClosestPos
       else:
         print "Ghost " + str(ghostIndex) + " is dead."
 
     #We've now found the closest most likely position of a ghost.
-    print "Total closest dist:", totalClosestDist
-    print "Total closest pos:", totalClosestPos
+    #print "Total closest dist:", totalClosestDist
+    #print "Total closest pos:", totalClosestPos
 
-    if len(totalClosestPos) == 1:
-      print "Only one closestPos"
-      totalClosestPos = totalClosestPos[0]
-    print totalClosestPos
-    #Now need to figure out which direction to move there.
+    n = len(totalClosestPos)
+    singleTotalClosestPos = totalClosestPos[random.randint(0, n-1)]
+    #print "singleTotalClosestPos", singleTotalClosestPos
+
+    #We have found the closest ghost (singleTotalClosestPos)
+    #Now need to figure out which direction moves us closer
     minD = 100000
     minDirection = []
+    #print "Which action gets us closest to ", singleTotalClosestPos
     for action in legal:
-      print "Location before move is", pacmanPosition
-      print "Moving ", action
+      #print "Location before move is", pacmanPosition
+      #print "Moving ", action
       successorPosition = Actions.getSuccessor(pacmanPosition, action)
-      print "Now at location", successorPosition
-      print totalClosestPos
-      d = self.distancer.getDistance(successorPosition, totalClosestPos)
-      print "d", d
+      #print "Now at location", successorPosition
+      #print totalClosestPos
+      d = self.distancer.getDistance(successorPosition, singleTotalClosestPos)
+      #print "d", d
       if d < minD:
         minD = d
         minDirection = []
         minDirection.append(action)
       elif d == minD:
         minDirection.append(action)
-    numDirections = len(minDirection)
-    bestDir = minDirection[random.randint(0, numDirections-1)]
-    print bestDir
-
+    #print "minDirection", minDirection
+    n = len(minDirection)
+    bestDir = minDirection[random.randint(0, n-1)]
+    #print bestDir
     return bestDir
+
+    #i believe this is correct theoretically, but the list manipulation has some kinks
